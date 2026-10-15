@@ -33,9 +33,10 @@ The project includes dataset preprocessing, training and comparison of multiple 
 The project compares multiple classification algorithms. Update the list below to match the models actually implemented in your experiments.
 
 - Logistic Regression
-- Random Forest Classifier
-- Support Vector Machine (SVM)
-- Gradient Boosting Classifier
+- Decision Tree
+- Random Forest
+- Extra Trees
+- XGBoost
 
 The models are evaluated using the following metrics:
 
@@ -57,10 +58,6 @@ PhishingWebsiteDetection/
 ├── phishing_model.joblib
 ├── README.md
 ├── .gitignore
-│
-└── results/
-    ├── model_comparison.png
-    └── confusion_matrix.png
 ```
 
 *Note: The `results/` folder and image filenames are examples. Adjust the structure to match your actual project files.*
@@ -124,19 +121,31 @@ http://localhost:8501
 
 ## 8. Dataset and Preprocessing
 
-The project uses a dataset containing phishing and legitimate website examples.
+### Dataset Source
 
-The preprocessing workflow may include:
+The dataset used in this project was obtained from PhiUSIIL_Phishing_URL_Dataset.csv.
 
-- Inspecting dataset structure and data types.
-- Handling missing values and duplicate records.
-- Examining the distribution of phishing and legitimate classes.
-- Preparing input features and target labels.
-- Encoding categorical features or scaling numerical features where required.
-- Splitting the dataset into training and testing sets.
-- Applying consistent preprocessing during training and prediction.
+- **Dataset Name**: PhiUSIIL_Phishing_URL_Dataset.csv
+- **Source**: Kaggle
+- **Dataset Link**: https://www.kaggle.com/datasets/kaggleprollc/phishing-url-websites-dataset-phiusiil
+- **Total Records**: 235795
+- **Number of Features**: 56
+- **Target Classes**: Phishing and Legitimate
 
-**Dataset source:** Add the actual dataset name, download link, number of records, number of features, and license here.
+### Data Preprocessing
+
+The following preprocessing steps were performed:
+
+- Examined the dataset structure and data types.
+- Checked for missing values and duplicate records.
+- Analyzed the distribution of phishing and legitimate samples.
+- Separated input features from the target label.
+- Applied encoding or feature scaling where required.
+- Split the dataset into training and testing sets.
+
+### Dataset Usage
+
+The training dataset was used to train the machine learning models, while the testing dataset was used to evaluate their performance using accuracy, precision, recall, F1-score, and ROC-AUC.
 
 ## 9. Model Evaluation
 
@@ -157,9 +166,9 @@ Add the actual experimental results and figures to this section or to a separate
 The application is developed using Streamlit to provide an interactive interface for URL classification.
 
 - **Local execution:** Run the app using the command provided above.
-- **Online deployment:** Add the public Streamlit Community Cloud URL after successful deployment.
+- **Online deployment:** The application is deployed using Streamlit Community Cloud and is accessible through the following link.
 
-**Live application:** Add your deployed URL here.
+**Live application:** https://phishingwebsitedetection-nihd5vfytcebr2dsbrzzr2.streamlit.app/
 
 ## 11. Limitations
 
