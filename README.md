@@ -1,192 +1,207 @@
-# Phishing Website Detection Using Machine Learning
+# 🛡️ PhishGuard — Phishing URL Detection Using Machine Learning
 
-## 1. Project Overview
+PhishGuard is a machine-learning web application that classifies a submitted URL as **Phishing** or **Legitimate**. The Streamlit application extracts lexical and structural features from the URL and passes those features to a trained Random Forest classifier.
 
-Phishing is a cybersecurity threat in which attackers create deceptive websites or URLs to trick users into revealing sensitive information such as passwords, banking details, and personal data.
+> **Disclaimer:** This is an academic machine-learning project. A prediction is not a guarantee that a website is safe or malicious.
 
-This project aims to detect phishing websites using Machine Learning classification algorithms. It analyzes URL-related features and predicts whether a website is **Legitimate** or **Phishing**.
+## 1. Project Objectives
 
-The project includes dataset preprocessing, training and comparison of multiple machine learning models, performance evaluation, and an interactive web application developed using Streamlit.
+- Detect potentially phishing URLs using machine learning.
+- Inspect and clean a labelled URL-feature dataset.
+- Compare several classification models using consistent metrics.
+- Select and save a final model for use by the application.
+- Provide an interactive Streamlit interface for URL prediction.
+- Document local setup and deployment/update steps.
 
-## 2. Objectives
+## 2. Technology Stack
 
-- Detect phishing websites using Machine Learning.
-- Collect, clean, and preprocess a suitable dataset.
-- Train and compare at least four classification models.
-- Evaluate model performance using standard classification metrics.
-- Develop an interactive web interface using Streamlit.
-- Deploy the application for public access.
-- Maintain clean, documented, and reproducible code on GitHub.
+- **Language:** Python
+- **Data handling:** Pandas, NumPy
+- **Machine learning:** scikit-learn
+- **Model serialization:** Joblib (`phishguard_model.pkl`)
+- **Web interface:** Streamlit
+- **Notebook environment:** Google Colab / Jupyter
+- **Version control and hosting:** GitHub and Streamlit Community Cloud
 
-## 3. Technology Stack
+## 3. Dataset
 
-- **Programming Language:** Python
-- **Machine Learning:** Scikit-learn
-- **Data Processing:** Pandas, NumPy
-- **Model Serialization:** Joblib
-- **User Interface:** Streamlit
-- **Development Environment:** Google Colab and Visual Studio Code
-- **Version Control:** Git and GitHub
+The training notebook reads the dataset file named **`url_features_extracted1.csv`**. It contains URL records, extracted URL characteristics, and the target column `ClassLabel`.
 
-## 4. Machine Learning Models
+### Dataset structure recorded in the notebook
 
-The project compares multiple classification algorithms. Update the list below to match the models actually implemented in your experiments.
+| Item | Value |
+|---|---:|
+| Rows before cleaning | 101,219 |
+| Columns before cleaning | 18 |
+| URL text column | `URL` |
+| Target column | `ClassLabel` |
+| Rows after cleaning | 100,872 |
+| Columns after cleaning | 18 |
+| Input features used for training | 16 |
+
+The dataset includes the original URL column, 16 engineered URL features, and the target label. The original `URL` string is excluded from the final model input; the application calculates the 16 engineered features from the URL entered by the user.
+
+### Target labels
+
+The notebook's application code interprets **`ClassLabel = 0` as Phishing** and **`ClassLabel = 1` as Legitimate**. The cleaned class counts recorded in the notebook are:
+
+| ClassLabel | Interpretation | Records after cleaning |
+|---:|---|---:|
+| 0 | Phishing | 63,492 |
+| 1 | Legitimate | 37,380 |
+| **Total** |  | **100,872** |
+
+**Dataset source:** The notebook identifies the local filename but does not record a verifiable download URL or license. Add the original dataset source and applicable license here before public submission; do not assume a source or license that has not been confirmed.
+
+## 4. Data Cleaning and Preprocessing
+
+The preprocessing steps documented in the training notebook are:
+
+1. **Load the CSV:** Read `url_features_extracted1.csv` using Pandas.
+2. **Inspect the data:** Check dataset dimensions, column types, non-null counts, duplicate rows, and class distribution.
+3. **Inspect class balance:** Count the records for each `ClassLabel` and plot the class distribution.
+4. **Remove rows with missing target labels:** Drop records where `ClassLabel` is missing. The notebook reported one missing target value in the original data.
+5. **Remove duplicate rows:** Drop duplicate records. The notebook reported 346 duplicate rows before cleaning.
+6. **Verify the cleaned data:** Check that no missing values or duplicate rows remain. The resulting dataset has 100,872 rows.
+7. **Separate features and target:** Use `ClassLabel` as the target. Exclude both `ClassLabel` and the raw `URL` column from the final model features.
+8. **Split the dataset:** Use an 80% training / 20% testing split with `random_state=42` and `stratify=y`, preserving the approximate class proportions in each split.
+9. **Extract the same features at prediction time:** The Streamlit application applies the same feature definitions to a user-entered URL and arranges the values in the model's expected feature order.
+
+The notebook also performs exploratory analysis, including class-distribution plots, a correlation heatmap, URL-length and entropy distributions, digit-count analysis, box plots, and class-wise feature means.
+
+## 5. URL Features Used by the Model
+
+The final classifier uses these 16 features in the following order:
+
+1. `url_length` — total length of the URL
+2. `has_ip_address` — whether the host is represented as an IPv4 address
+3. `dot_count` — number of dots in the URL
+4. `https_flag` — whether the URL uses HTTPS
+5. `url_entropy` — character-distribution entropy of the URL
+6. `token_count` — number of tokens after splitting on URL separators
+7. `subdomain_count` — estimated number of subdomains
+8. `query_param_count` — number of query parameters
+9. `tld_length` — length of the top-level domain text
+10. `path_length` — length of the URL path
+11. `has_hyphen_in_domain` — whether the domain contains a hyphen
+12. `number_of_digits` — number of digits in the URL
+13. `tld_popularity` — whether the TLD is in the notebook's predefined common-TLD list
+14. `suspicious_file_extension` — whether the path ends with one of the predefined suspicious file extensions
+15. `domain_name_length` — length of the host/domain text after removing a port
+16. `percentage_numeric_chars` — percentage of URL characters that are digits
+
+The feature extraction logic in `app.py` must remain consistent with the logic used during model training. If the features or their order change, retrain and save the model and update the application together.
+
+## 6. Models Compared and Evaluation
+
+The training notebook compares five classifiers on the same held-out test split:
 
 - Logistic Regression
 - Decision Tree
 - Random Forest
-- Extra Trees
+- Support Vector Machine (SVM)
 - XGBoost
 
-The models are evaluated using the following metrics:
+The notebook reports the following metrics. Values below are copied from the notebook's model-comparison output; they are experimental results for that notebook split, not a guarantee of real-world performance.
 
-- Accuracy
-- Precision
-- Recall
-- F1-score
-- ROC-AUC score
+| Model | Accuracy | Precision | Recall | F1-score | ROC-AUC |
+|---|---:|---:|---:|---:|---:|
+| Logistic Regression | 0.997026 | 0.993873 | 0.998127 | 0.995996 | 0.999895 |
+| Decision Tree | 0.999405 | 0.999465 | 0.998930 | 0.999197 | 0.999307 |
+| Random Forest | 0.999554 | 0.999866 | 0.998930 | 0.999398 | 0.999997 |
+| SVM | 0.998563 | 0.996798 | 0.999331 | 0.998063 | 0.999952 |
+| XGBoost | 0.999405 | 0.999465 | 0.998930 | 0.999197 | 0.999997 |
 
-The final model is selected based on the evaluation results and the requirements of phishing detection.
+Random Forest was selected as the final model in the notebook and saved as `phishguard_model.pkl`. Metrics depend on the dataset, labels, feature extraction, and split. For a rigorous evaluation, check for duplicate or near-duplicate URLs across data partitions and evaluate on a newer independent dataset where possible.
 
-## 5. Project Structure
+## 7. Application and Prediction Workflow
+
+1. A user enters a URL in the Streamlit interface.
+2. The app normalizes the URL by adding `http://` when no scheme is provided.
+3. The feature extraction function calculates the 16 URL features.
+4. The features are placed into a DataFrame using the expected column names and order.
+5. The saved Random Forest model predicts the class and provides class probabilities.
+6. The interface displays a phishing or legitimate result and the corresponding probability.
+
+A model result is only a machine-learning classification. Do not use it as the sole basis for entering credentials or deciding whether a website is trustworthy.
+
+## 8. Project Structure
 
 ```text
 PhishingWebsiteDetection/
-│
 ├── app.py
+├── phishguard_model.pkl
 ├── requirements.txt
-├── phishing_model.joblib
 ├── README.md
-├── .gitignore
+├── PhishGuard.ipynb              # optional training notebook
+└── url_features_extracted1.csv   # training dataset; not required to run the deployed app
 ```
 
-*Note: The `results/` folder and image filenames are examples. Adjust the structure to match your actual project files.*
+Your actual folder may contain additional files. Do not upload the virtual environment (`venv/`) to GitHub.
 
-## 6. Installation and Setup
+## 9. Local Installation and Run Instructions
 
 ### Prerequisites
 
-- Python 3.10 or a compatible Python version
-- pip package manager
+- Python compatible with the versions listed in `requirements.txt`
+- pip
 - Git (optional, for cloning the repository)
 
-### Step 1: Clone the Repository
+### 1. Clone the repository
+
+Replace the placeholder with your actual repository URL:
 
 ```bash
 git clone YOUR_GITHUB_REPOSITORY_URL
 cd PhishingWebsiteDetection
 ```
 
-Replace `YOUR_GITHUB_REPOSITORY_URL` with the actual URL of your GitHub repository.
+### 2. Create and activate a virtual environment (Windows)
 
-### Step 2: Create a Virtual Environment
-
-```bash
+```bat
 python -m venv venv
+venv\Scriptsctivate.bat
 ```
 
-Activate the environment on Windows:
+### 3. Install dependencies
 
-```cmd
-venv\Scripts\activate
-```
-
-### Step 3: Install Dependencies
-
-```bash
+```bat
+python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
 
-### Step 4: Run the Application
+### 4. Start the application
 
-```bash
+```bat
 python -m streamlit run app.py
 ```
 
-Open the local URL displayed in the terminal, usually:
+Open the local URL shown in the terminal, usually `http://localhost:8501`.
 
-```text
-http://localhost:8501
-```
+## 10. Online Deployment
 
-## 7. How to Use the Application
+The application can be deployed using Streamlit Community Cloud from the GitHub repository.
 
-1. Launch the Streamlit application.
-2. Enter the URL you want to analyze.
-3. Submit the URL for prediction.
-4. View the predicted classification.
-5. Interpret the result as a model-generated indication of whether the URL resembles a phishing or legitimate website.
+**Live application:** Add your existing public Streamlit app URL here.
 
-**Important:** This application is a machine learning-based detection aid. Its predictions are not a guarantee that a website is safe or malicious.
+For an update to an existing deployment:
 
-## 8. Dataset and Preprocessing
+1. Replace `app.py`, `phishguard_model.pkl`, and/or `requirements.txt` as needed.
+2. Test locally using the commands above.
+3. Commit and push the updated files to the GitHub branch connected to Streamlit Community Cloud.
+4. Wait for the deployment to finish, then test the public URL.
 
-### Dataset Source
+The deployed app needs `app.py`, `phishguard_model.pkl`, and `requirements.txt`. The training CSV and notebook are not required at runtime unless the app is changed to read them.
 
-The dataset used in this project was obtained from PhiUSIIL_Phishing_URL_Dataset.csv.
+## 11. Limitations and Future Work
 
-- **Dataset Name**: PhiUSIIL_Phishing_URL_Dataset.csv
-- **Source**: Kaggle
-- **Dataset Link**: https://www.kaggle.com/datasets/kaggleprollc/phishing-url-websites-dataset-phiusiil
-- **Total Records**: 235795
-- **Number of Features**: 56
-- **Target Classes**: Phishing and Legitimate
+- The model only uses the 16 engineered URL features described above.
+- URL-only classification cannot guarantee that a website is safe or malicious.
+- Newly developed phishing techniques and changes in URL patterns may reduce accuracy.
+- The high test metrics should be validated on independent, recent data.
+- Future work could include domain registration information, reputation feeds, explainability, monitoring, and repeated evaluation on newer datasets.
 
-### Data Preprocessing
-
-The following preprocessing steps were performed:
-
-- Examined the dataset structure and data types.
-- Checked for missing values and duplicate records.
-- Analyzed the distribution of phishing and legitimate samples.
-- Separated input features from the target label.
-- Applied encoding or feature scaling where required.
-- Split the dataset into training and testing sets.
-
-### Dataset Usage
-
-The training dataset was used to train the machine learning models, while the testing dataset was used to evaluate their performance using accuracy, precision, recall, F1-score, and ROC-AUC.
-
-## 9. Model Evaluation
-
-The trained models are compared using a common test dataset and consistent evaluation procedures.
-
-| Metric | Description |
-|---|---|
-| Accuracy | Proportion of all predictions that are correct |
-| Precision | Proportion of predicted phishing cases that are actually phishing |
-| Recall | Proportion of actual phishing cases correctly detected |
-| F1-score | Harmonic mean of precision and recall |
-| ROC-AUC | Measures discrimination between the two classes across thresholds |
-
-Add the actual experimental results and figures to this section or to a separate results directory.
-
-## 10. User Interface and Deployment
-
-The application is developed using Streamlit to provide an interactive interface for URL classification.
-
-- **Local execution:** Run the app using the command provided above.
-- **Online deployment:** The application is deployed using Streamlit Community Cloud and is accessible through the following link.
-
-**Live application:** https://phishingwebsitedetection-nihd5vfytcebr2dsbrzzr2.streamlit.app/
-
-## 11. Limitations
-
-- Prediction quality depends on the dataset and the features used during training.
-- Previously unseen phishing techniques may not be detected accurately.
-- A URL prediction alone cannot guarantee the safety of a website.
-- Performance on real-world URLs may differ from performance on the test dataset.
-- The model should be evaluated and updated as phishing techniques evolve.
-
-## 12. Future Scope
-
-- Integrate additional URL and domain-based features.
-- Evaluate the model on newer, independently collected datasets.
-- Improve detection of previously unseen phishing attacks.
-- Add explainability to show which features influenced a prediction.
-- Explore integration with browser security tools or real-time threat intelligence sources.
-
-## 13. Team Members
+## 12. Team Members
 
 | Student Name | Roll Number |
 |---|---|
@@ -194,15 +209,16 @@ The application is developed using Streamlit to provide an interactive interface
 | Student 2 | Add roll number |
 | Student 3 | Add roll number |
 
-## 14. References
+## 13. References and Documentation
 
-Add the research papers, dataset source, and official documentation used in this project.
+- scikit-learn documentation: https://scikit-learn.org/stable/
+- Streamlit documentation: https://docs.streamlit.io/
+- Pandas documentation: https://pandas.pydata.org/docs/
+- NumPy documentation: https://numpy.org/doc/
+- XGBoost documentation: https://xgboost.readthedocs.io/
 
-- Scikit-learn Documentation: https://scikit-learn.org/stable/
-- Streamlit Documentation: https://docs.streamlit.io/
-- Pandas Documentation: https://pandas.pydata.org/docs/
-- NumPy Documentation: https://numpy.org/doc/
+Add the original dataset citation and any research papers used in your report once their bibliographic details and dataset licensing have been verified.
 
-## 15. License
+## 14. License
 
-Add the license applicable to your project and ensure that the dataset and any third-party resources are used according to their respective terms.
+Add a project license if you intend to distribute this code. Confirm that the dataset and any third-party resources may be redistributed under their respective terms before publishing them.
