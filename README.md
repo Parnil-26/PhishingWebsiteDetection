@@ -51,7 +51,7 @@ The notebook's application code interprets **`ClassLabel = 0` as Phishing** and 
 | 1 | Legitimate | 37,380 |
 | **Total** |  | **100,872** |
 
-**Dataset source:** The notebook identifies the local filename but does not record a verifiable download URL or license. Add the original dataset source and applicable license here before public submission; do not assume a source or license that has not been confirmed.
+**Dataset source:** https://data.mendeley.com/datasets/hx4m73v2sf/2
 
 ## 4. Data Cleaning and Preprocessing
 
@@ -182,7 +182,7 @@ Open the local URL shown in the terminal, usually `http://localhost:8501`.
 
 The application can be deployed using Streamlit Community Cloud from the GitHub repository.
 
-**Live application:** Add your existing public Streamlit app URL here.
+**Live application:** https://phishingwebsitedetection-nihd5vfytcebr2dsbrzzr2.streamlit.app/
 
 For an update to an existing deployment:
 
